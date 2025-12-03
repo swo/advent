@@ -1,5 +1,10 @@
-def invalid_in_ranges(ranges: str):
-    return [x for x in enumerate_from_ranges(ranges) if not is_valid(x)]
+import functools
+import itertools
+from typing import Callable
+
+
+def invalid_in_ranges(ranges: str, is_valid_fun: Callable[[int], bool]) -> list[int]:
+    return list(itertools.filterfalse(is_valid_fun, enumerate_from_ranges(ranges)))
 
 
 def enumerate_from_ranges(ranges: str):
@@ -9,16 +14,17 @@ def enumerate_from_ranges(ranges: str):
 
 
 def parse_id_ranges(ranges: str) -> list[tuple[int, int]]:
-    return [parse_id_range1(range_) for range_ in ranges.split(",")]
+    return [parse_id_range(range_) for range_ in ranges.split(",")]
 
 
-def parse_id_range1(range_: str) -> tuple[int, int]:
+def parse_id_range(range_: str) -> tuple[int, int]:
     values = range_.split("-")
     assert len(values) == 2
     return (int(values[0]), int(values[1]))
 
 
-def is_valid(x: int) -> bool:
+def is_valid1(x: int) -> bool:
+    """Part 1 valid IDs: not a two-part repeat"""
     s = str(x)
     if len(s) % 2 == 0:
         # number is of even length
@@ -30,22 +36,39 @@ def is_valid(x: int) -> bool:
         return True
 
 
-# check the example
-example_ranges = "11-22,95-115,998-1012,1188511880-1188511890,222220-222224,1698522-1698528,446443-446449,38593856-38593862,565653-565659,824824821-824824827,2121212118-2121212124"
-assert invalid_in_ranges(example_ranges) == [
-    11,
-    22,
-    99,
-    1010,
-    1188511885,
-    222222,
-    446446,
-    38593859,
-]
+def is_valid2(x: int) -> bool:
+    """Part 2 valid IDs: there is no repeated substring"""
+    s = str(x)
 
-assert sum(invalid_in_ranges(example_ranges)) == 1227775554
+    # all length-1 IDs are valid
+    if len(s) == 1:
+        return True
+
+    # an ID is invalid if:
+    # - for some run of length N
+    # - the x/N substrings of length N are identical
+    for n in run_lengths(len(s)):
+        if len(set(itertools.batched(s, n, strict=True))) == 1:
+            return False
+
+    return True
+
+
+@functools.cache
+def run_lengths(x: int) -> list[int]:
+    """
+    Like the divisors, except the length of possibly-repeated substrings
+
+    Eg 2 -> [1], 4 -> [1, 2], 12 -> [1, 2, 3, 4, 6]
+    """
+    if x <= 1:
+        raise ValueError
+    else:
+        return [i for i in range(1, x // 2 + 1) if x % i == 0]
+
 
 with open("2025/input02.txt") as f:
     ranges = f.read().strip()
 
-print(sum(invalid_in_ranges(ranges)))
+print("Part 1: ", sum(invalid_in_ranges(ranges, is_valid1)))
+print("Part 2: ", sum(invalid_in_ranges(ranges, is_valid2)))
