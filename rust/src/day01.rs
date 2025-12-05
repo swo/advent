@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 
+#[derive(Default)]
 pub struct Dial {
     position: isize,
     n_positions: isize,
@@ -64,20 +65,20 @@ impl Dial {
             panic!("bad position: {}", self.position)
         }
     }
-}
 
-pub fn new_dial() -> Dial {
-    Dial {
-        position: 50,
-        n_positions: 100,
-        n_zero_cross: 0,
-        n_zero_stop: 0,
+    pub fn new() -> Dial {
+        Dial {
+            position: 50,
+            n_positions: 100,
+            n_zero_cross: 0,
+            n_zero_stop: 0,
+        }
     }
 }
 
 pub fn run() {
     let program = std::fs::read_to_string("../2025/input01.txt").unwrap();
-    let mut dial = new_dial();
+    let mut dial = Dial::new();
     dial.run_program(program);
     println!("Part 1: {}", dial.n_zero_stop);
     println!("Part 2: {}", dial.n_zero_cross);
@@ -103,7 +104,7 @@ mod tests {
         "}
         .to_string();
 
-        let mut dial = new_dial();
+        let mut dial = Dial::new();
         dial.run_program(program);
         assert_eq!(dial.n_zero_stop, 3);
         assert_eq!(dial.n_zero_cross, 6);
