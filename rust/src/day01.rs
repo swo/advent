@@ -15,7 +15,7 @@ pub enum Direction {
 }
 
 impl Dial {
-    pub fn run_program(&mut self, program: String) {
+    pub fn run_program(&mut self, program: &str) {
         for line in program.lines() {
             self.run_line(line)
         }
@@ -79,7 +79,7 @@ impl Dial {
 pub fn run() {
     let program = std::fs::read_to_string("../2025/input01.txt").unwrap();
     let mut dial = Dial::new();
-    dial.run_program(program);
+    dial.run_program(&program);
     println!("Part 1: {}", dial.n_zero_stop);
     println!("Part 2: {}", dial.n_zero_cross);
 }
@@ -105,7 +105,7 @@ mod tests {
         .to_string();
 
         let mut dial = Dial::new();
-        dial.run_program(program);
+        dial.run_program(&program);
         assert_eq!(dial.n_zero_stop, 3);
         assert_eq!(dial.n_zero_cross, 6);
     }
